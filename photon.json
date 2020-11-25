@@ -1,0 +1,85 @@
+{
+  "builders": [
+    {
+      "boot_command": [
+        "<esc><wait>",
+        "vmlinuz initrd=initrd.img root=/dev/ram0 loglevel=3 ks=http://{{ .HTTPIP }}:{{ .HTTPPort }}/photon-kickstart.json photon.media=cdrom",
+        "<enter>"
+      ],
+      "boot_wait": "10s",
+      "disk_size": "12288",
+
+      "format": "ovf",
+      "guest_os_type": "Other",
+      "headless": false,
+      "http_directory": "http",
+      "iso_checksum": "{{ user `iso_checksum_type` }}:{{ user `iso_checksum` }}",
+      "iso_url": "{{ user `iso_url` }}",
+      "shutdown_command": "/sbin/shutdown -h now",
+      "shutdown_timeout": "1000s",
+      "skip_compaction": true,
+      "ssh_password": "{{ user `guest_password` }}",
+      "ssh_port": 22,
+      "ssh_timeout": "60m",
+      "ssh_username": "{{ user `guest_username` }}",
+      "type": "vmware-iso",
+      "version": "13",
+      "vm_name": "{{ user `vm_name` }}",
+      "vmx_data": {
+        "annotation": "Version: {{ user `version` }}",
+        "ethernet0.addressType": "generated",
+        "ethernet0.networkName": "{{ user `portgroup` }}",
+        "ethernet0.present": "TRUE",
+        "ethernet0.startConnected": "TRUE",
+        "ethernet0.virtualDev": "vmxnet3",
+        "ethernet0.wakeOnPcktRcv": "FALSE",
+        "memsize": "{{ user `ramsize` }}",
+        "numvcpus": "{{ user `numvcpus` }}"
+      },
+      "vnc_disable_password": true
+    }
+  ],
+  "post-processors": [
+    {
+      "environment_vars": [
+        "PHOTON_VERSION={{ user `version` }}",
+        "PHOTON_APPLIANCE_NAME={{ user `vm_name` }}",
+        "FINAL_PHOTON_APPLIANCE_NAME={{ user `vm_name` }}_{{user `version`}}",
+        "PHOTON_OVF_TEMPLATE={{ user `photon_ovf_template` }}"
+      ],
+      "inline": [
+        "cd manual",
+        "./add_ovf_properties.sh"
+      ],
+      "type": "shell-local"
+    }
+  ],
+  "provisioners": [
+    {
+      "scripts": [
+        "scripts/photon-settings.sh",
+        "scripts/photon-cleanup.sh"
+      ],
+      "type": "shell"
+    },
+    {
+      "destination": "/etc/rc.d/rc.local",
+      "source": "files/rc.local",
+      "type": "file"
+    },
+    {
+      "destination": "/root/setup.sh",
+      "source": "files/setup.sh",
+      "type": "file"
+    },
+    {
+      "destination": "/root",
+      "source": "/Users/adeleporte/Documents/14-CODE/appliance/appliance/dist",
+      "type": "file"
+    }
+  ],
+  "variables": {
+    "photon_ovf_template": "photon.xml.template",
+    "portgroup": "DPortGroup"
+  }
+}
