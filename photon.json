@@ -71,11 +71,6 @@
       "destination": "/root/setup.sh",
       "source": "files/setup.sh",
       "type": "file"
-    },
-    {
-      "destination": "/root",
-      "source": "/Users/adeleporte/Documents/14-CODE/appliance/appliance/dist",
-      "type": "file"
     }
   ],
   "variables": {
